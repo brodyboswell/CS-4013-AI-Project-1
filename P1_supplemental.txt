@@ -1,28 +1,36 @@
 Answer questions marked as "QS"
 
 QS1.1:
-
+We Used LIFO stack to implement DFS because DFS expands at the most recently discovered node. A stack naturally enforces this behavior.
 
 QS1.2:
-
+The exploration order is as expected for DFS. Pacman explores deepest path first. Pacman does not actually travel to all 
+explored nodes as the explored states include paths that are not part of final solution path.
 
 QS2.1:
-
+We used queue for BFS because states are expanded by level. This data structure ensures all nodes at a depth are explored
+before moving deeper.
 
 QS3.1:
-
+We did not implement custom cost function. The Cost function is determined by values returned by getSuccessors function. 
 
 
 QS4.1:
-
+The null heuristic always returns 0, while the Manhattan distance heuristic estimates distance to goal. The null heuristic is uninformed so
+it is not as efficent as Manhattan distance, but it still produces an optimal solution.
 
 QS5.1:
-
+The state is represented as tuple of (position, visitedCorners) where visitedCorners is 4-tuple of booleans.
 
 QS5.2:
-
+The start state includes start position as well as a tuple of boolean values indicating if whether each corner has been visited. Once all four 
+corners have been visited the goal state is reached. All actions have cost of 1.
 
 QS6.1:
-
+We used maximum Manhattan distance from current position to any unvisited corner. The strengths are that it is admissible and 
+consistent. The weakness is it only estimates the distance to furthest corner and does not account for
+structure of the maze.
 
 QS7.1:
+We used maximum Manhattan distance from current position to any remaining food dots. The strengths of this heuristic are that it is admissible 
+and consistent. The weakness is that it does not account the for need to visit multiple dots.

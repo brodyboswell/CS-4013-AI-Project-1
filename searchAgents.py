@@ -296,6 +296,17 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        # Initialize start state as start position 
+        startState = self.startingPosition
+        # List of booleans for if corners have been visited
+        visitedList = []
+        # Loop through corner coordinates and mark true if start state = corner
+        for corner in self.corners:
+            visitedList.append(startState == corner)
+
+        # Convert list to tuple and return current position with visited corners
+        visited = tuple(visitedList)
+        return (startState, visited)
         util.raiseNotDefined()
 
     def isGoalState(self, state: Any):
@@ -303,6 +314,10 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
+        position, visitedCorners = state
+        # If all corners are visted (1) sum will equal 4
+        return sum(visitedCorners) == 4
+    
         util.raiseNotDefined()
 
     def getSuccessors(self, state: Any):
@@ -326,6 +341,24 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            (x,y), visited = state
+            # Compute change in x and y
+            dx, dy = Actions.directionToVector(action)
+            # Compute next x and y
+            nextx, nexty = int(x + dx), int(y + dy)
+            # If next x and y are walls skip
+            if self.walls[nextx][nexty]:
+                continue
+            
+            nextPosition = (nextx, nexty)
+            nextVisited = list(visited)
+            if nextPosition in self.corners:
+                i = self.corners.index(nextPosition)
+                nextVisited[i] = True
+            nextVisited = tuple(nextVisited)
+            # Add successor with updated position and step cost = 1
+            successors.append(((nextPosition, nextVisited), action, 1))
+
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -361,7 +394,24 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    position, visited = state
+    # store corners not visited in list
+    remaining = []
+    for i in range(len(corners)):
+        if not visited[i]:
+            remaining.append(corners[i])
+
+    if len(remaining) == 0:
+        return 0
+    
+    # Find maximum distance to any corner and return as lower bound
+    maxDistance = 0
+    for corner in remaining:
+        distance = util.manhattanDistance(position, corner)
+        if distance > maxDistance:
+            maxDistance = distance
+    
+    return maxDistance # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -455,7 +505,23 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    # Store food grid as list of tuples
+    foodList = foodGrid.asList()
+    
+    if len(foodList) == 0:
+        return 0
+
+    # Find maximum distance to any food and return
+    maxDist = 0
+    for food in foodList:
+        distance = util.manhattanDistance(position, food)
+        if distance > maxDist:
+            maxDist = distance
+
+    return maxDist
+
+
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -486,6 +552,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        # use bfs to find shortest path to nearest food
+        return search.bfs(problem)
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -522,6 +590,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
+        # True if food at current position
+        return self.food[x][y]
         util.raiseNotDefined()
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:

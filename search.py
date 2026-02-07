@@ -87,16 +87,95 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    # Initialize fringe or frontier as LIFO stack
+    fringe = util.Stack()
+    startState = problem.getStartState()
+    fringe.push((startState, [])) # push start state and empty list of actions
+    visited = set() # create set of visited states to not revisit
+
+    while not fringe.isEmpty(): #loop till all nodes are visited
+        state, actions = fringe.pop()
+
+        if problem.isGoalState(state): #if current state is goal return path taken
+            return actions
+        
+        if state in visited: #add state if not already visited
+            continue
+        visited.add(state)
+
+        # pushes successor states and adds action to get to state
+        for successor, action, _cost in problem.getSuccessors(state): 
+            if successor not in visited:
+                fringe.push((successor, actions + [action]))
+        
+    return []
+
+
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+
+    #initialize fringe as FIFO queue
+    fringe = util.Queue()
+    startState = problem.getStartState()
+    
+    # Push start state with empty action list
+    fringe.push((startState, [])) 
+    visited = {startState}
+
+    # Continue until queue is empty
+    while not fringe.isEmpty():
+        state, actions = fringe.pop()
+
+        if problem.isGoalState(state):
+            return actions
+        
+        # Expand and add actions
+        for successor, action, _cost in problem.getSuccessors(state):
+            if successor not in visited:
+                visited.add(successor)
+                fringe.push((successor, actions + [action]))
+
+    return []
+
+
     util.raiseNotDefined()
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+
+    # initialize fringe with priority queue orders by lowest path cost
+    fringe = util.PriorityQueue()
+    startState = problem.getStartState()
+
+    # Push state, actions, cost so far where priority = total cost
+    fringe.push((startState, [], 0), 0)
+    # track states to avoid revisitation
+    visited = set()
+
+    # Continue till all nodes explored
+    while not fringe.isEmpty():
+        #pop node with smallest cost
+        state, actions, totalCost = fringe.pop() 
+
+        if state in visited:
+            continue
+        visited.add(state)
+
+        if problem.isGoalState(state): return actions
+
+        
+        for successor, action, actionCost in problem.getSuccessors(state):
+            if successor not in visited:
+                # Compute new total cost
+                newTotalCost = totalCost + actionCost 
+                # Push successor with priority = newTotalCost
+                fringe.push((successor, actions + [action], newTotalCost), newTotalCost)
+
+    return []
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
@@ -109,6 +188,37 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    # Initialize fringe as priority queue
+    fringe = util.PriorityQueue()
+    startState = problem.getStartState()
+    # Store best cost for each state
+    bestCost = {startState : 0}
+    # Pritority = g + h
+    fringe.push((startState, [], 0), 0 + heuristic(startState, problem)) 
+
+    # Expand until no more nodes
+    while not fringe.isEmpty():
+        # Pop node with lowest g + h
+        state, actions, pathCost = fringe.pop() 
+        # If not the current best cost skip to prevent higher cost copies
+        if pathCost != bestCost.get(state, float("inf")):
+            continue
+
+        if problem.isGoalState(state):
+            return actions
+        
+        # Expand successors
+        for successor, action, actionCost in problem.getSuccessors(state):
+            newPathCost = pathCost + actionCost
+            # if path is better than best cost update bestCost
+            if newPathCost < bestCost.get(successor, float("inf")):
+                bestCost[successor] = newPathCost
+                # Compute priority for ordering
+                priority = newPathCost + heuristic(successor, problem)
+                fringe.push((successor, actions + [action], newPathCost), priority)
+
+    return []
+
     util.raiseNotDefined()
 
 
